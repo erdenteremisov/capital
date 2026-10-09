@@ -1,0 +1,11 @@
+import type { Iso } from '../types/models.ts';
+const pad = (n: number) => String(n).padStart(2, '0');
+export const toIso = (d: Date): Iso => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+export const parseIso = (s: Iso): Date => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+export const todayIso = (): Iso => toIso(new Date());
+export const addDays = (s: Iso, n: number): Iso => { const d = parseIso(s); d.setDate(d.getDate() + n); return toIso(d); };
+export const addMonths = (s: Iso, n: number): Iso => { const d = parseIso(s), day = d.getDate(); d.setDate(1); d.setMonth(d.getMonth() + n); d.setDate(Math.min(day, new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate())); return toIso(d); };
+export const diffDays = (a: Iso, b: Iso): number => Math.round((parseIso(b).getTime() - parseIso(a).getTime()) / 864e5);
+export const nextDate = (s: Iso, f: string): Iso | null => f === 'weekly' ? addDays(s, 7) : f === 'monthly' ? addMonths(s, 1) : f === 'quarterly' ? addMonths(s, 3) : f === 'yearly' ? addMonths(s, 12) : null;
+export const prevDate = (s: Iso, f: string): Iso => f === 'weekly' ? addDays(s, -7) : f === 'monthly' ? addMonths(s, -1) : f === 'quarterly' ? addMonths(s, -3) : addMonths(s, -12);
+export const monthsPerPeriod = (f: string): number => ({ weekly: 12 / 52, monthly: 1, quarterly: 3, yearly: 12 } as Record<string, number>)[f] ?? 1;
